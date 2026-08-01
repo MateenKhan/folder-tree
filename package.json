@@ -1,0 +1,78 @@
+{
+  "name": "@jugaaadi/folder-tree",
+  "version": "0.0.1",
+  "description": "A dark-first, dependency-free React tree view with drag-and-drop reordering, search that auto-expands, multi/range select and full keyboard navigation.",
+  "keywords": [
+    "react",
+    "tree",
+    "treeview",
+    "folder",
+    "layers",
+    "outliner",
+    "drag-and-drop",
+    "hierarchy",
+    "explorer",
+    "accessible"
+  ],
+  "license": "MIT",
+  "author": "jugaaadi",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MateenKhan/folder-tree.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MateenKhan/folder-tree/issues"
+  },
+  "homepage": "https://folder-tree.jugaaadi.com",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./styles.css": "./dist/folder-tree.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "EVENTS.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "vite",
+    "preview": "vite preview",
+    "test": "node test/tree.test.mjs",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "react": ">=17",
+    "react-dom": ">=17"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

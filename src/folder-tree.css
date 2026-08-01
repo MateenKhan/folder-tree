@@ -1,0 +1,498 @@
+/**
+ * folder-tree — self-contained, fully themeable styles.
+ *
+ * Import once in your app:
+ *   import '@jugaaadi/folder-tree/styles.css';
+ *
+ * Every colour, size, weight and timing below is a custom property with a
+ * literal fallback baked into the `var()`, so the sheet renders correctly even
+ * if the token block never loads. You should never need to override a
+ * selector — set the tokens on `:root`, on a wrapper, or per instance:
+ *
+ *   .my-panel  { --ft-accent: #a78bfa; --ft-bg: #0b1020; }
+ *   <FolderTree style={{ '--ft-row-height': '32px' }} />
+ *
+ * Everything is scoped under `.ft-root`; nothing leaks.
+ */
+
+.ft-root {
+  /* ============================ LAYOUT ============================ */
+  --ft-row-height: 28px;
+  --ft-indent: 14px;
+  --ft-gap: 6px;
+  --ft-padding-x: 6px;
+  --ft-radius: 6px;
+  --ft-icon-size: 14px;
+
+  /* ============================= TYPE ============================= */
+  --ft-font-family: inherit;
+  --ft-font-size: 12px;
+  --ft-font-weight: 400;
+  --ft-font-weight-selected: 600;
+  --ft-hint-font-size: 11px;
+
+  /* ============================ SURFACE =========================== */
+  --ft-bg: transparent;
+  --ft-row-bg: transparent;
+  --ft-row-bg-hover: #1e293b;
+  --ft-row-bg-selected: rgba(6, 182, 212, 0.18);
+  --ft-row-border-selected: rgba(6, 182, 212, 0.45);
+
+  /* ============================= TEXT ============================= */
+  --ft-text: #cbd5e1;
+  --ft-text-selected: #cffafe;
+  --ft-text-muted: #64748b;
+  --ft-hint: #64748b;
+
+  /* ============================ ACCENT ============================ */
+  --ft-accent: #06b6d4;
+  --ft-accent-soft: rgba(6, 182, 212, 0.22);
+  --ft-danger: #f43f5e;
+  --ft-warn: #f59e0b;
+  --ft-match-ring: rgba(234, 179, 8, 0.55);
+
+  /* ============================== DND ============================= */
+  --ft-drop-line: #22d3ee;
+  --ft-drop-line-width: 2px;
+  --ft-drop-inside-bg: rgba(6, 182, 212, 0.16);
+  --ft-drop-inside-border: rgba(34, 211, 238, 0.7);
+  --ft-drop-reject: #f43f5e;
+
+  /* ============================ SEARCH ============================ */
+  --ft-search-bg: #020617;
+  --ft-search-border: #334155;
+  --ft-search-border-focus: var(--ft-accent, #06b6d4);
+  --ft-search-text: #e2e8f0;
+  --ft-search-placeholder: #475569;
+  --ft-search-height: 28px;
+
+  /* ============================ MOTION ============================ */
+  --ft-transition: 120ms ease;
+  --ft-hidden-opacity: 0.45;
+  --ft-disabled-opacity: 0.4;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+  background: var(--ft-bg, transparent);
+  font-family: var(--ft-font-family, inherit);
+  font-size: var(--ft-font-size, 12px);
+  color: var(--ft-text, #cbd5e1);
+  -webkit-user-select: none;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.ft-root *,
+.ft-root *::before,
+.ft-root *::after {
+  box-sizing: border-box;
+}
+
+/* ============================== SEARCH ============================= */
+
+.ft-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.ft-search__icon {
+  position: absolute;
+  left: 8px;
+  display: inline-flex;
+  width: var(--ft-icon-size, 14px);
+  height: var(--ft-icon-size, 14px);
+  color: var(--ft-accent, #06b6d4);
+  pointer-events: none;
+}
+
+.ft-search__icon svg,
+.ft-search__clear svg {
+  width: 100%;
+  height: 100%;
+}
+
+.ft-search__input {
+  width: 100%;
+  height: var(--ft-search-height, 28px);
+  padding: 0 26px 0 26px;
+  border-radius: var(--ft-radius, 6px);
+  border: 1px solid var(--ft-search-border, #334155);
+  background: var(--ft-search-bg, #020617);
+  color: var(--ft-search-text, #e2e8f0);
+  font: inherit;
+  font-size: var(--ft-font-size, 12px);
+  outline: none;
+  transition: border-color var(--ft-transition, 120ms ease);
+}
+
+.ft-search__input::placeholder {
+  color: var(--ft-search-placeholder, #475569);
+}
+
+.ft-search__input:focus {
+  border-color: var(--ft-search-border-focus, #06b6d4);
+}
+
+.ft-search__clear {
+  position: absolute;
+  right: 6px;
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ft-text-muted, #64748b);
+  cursor: pointer;
+}
+
+.ft-search__clear:hover {
+  color: var(--ft-text, #cbd5e1);
+}
+
+/* ============================== SCROLLER =========================== */
+
+.ft-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #334155 transparent;
+}
+
+.ft-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.ft-scroll::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+.ft-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ft-rows {
+  display: flex;
+  flex-direction: column;
+  outline: none;
+}
+
+.ft-rows:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--ft-accent-soft, rgba(6, 182, 212, 0.22));
+  border-radius: var(--ft-radius, 6px);
+}
+
+/* Virtualised mode: rows are absolutely placed inside a sized spacer. */
+.ft-rows--virtual {
+  display: block;
+  position: relative;
+}
+
+.ft-rows--virtual .ft-row {
+  left: 0;
+  right: 0;
+}
+
+.ft-empty {
+  padding: 12px 8px;
+  color: var(--ft-text-muted, #64748b);
+  font-size: var(--ft-font-size, 12px);
+  font-style: italic;
+}
+
+/* ================================ ROW ============================== */
+
+.ft-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--ft-gap, 6px);
+  height: var(--ft-row-height, 28px);
+  padding: 0 var(--ft-padding-x, 6px);
+  border-radius: var(--ft-radius, 6px);
+  border: 1px solid transparent;
+  background: var(--ft-row-bg, transparent);
+  color: var(--ft-text, #cbd5e1);
+  cursor: default;
+  transition:
+    background-color var(--ft-transition, 120ms ease),
+    border-color var(--ft-transition, 120ms ease);
+}
+
+.ft-row:hover {
+  background: var(--ft-row-bg-hover, #1e293b);
+}
+
+.ft-row--selected,
+.ft-row--selected:hover {
+  background: var(--ft-row-bg-selected, rgba(6, 182, 212, 0.18));
+  border-color: var(--ft-row-border-selected, rgba(6, 182, 212, 0.45));
+  color: var(--ft-text-selected, #cffafe);
+  font-weight: var(--ft-font-weight-selected, 600);
+}
+
+.ft-row--focused::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px var(--ft-accent, #06b6d4);
+  pointer-events: none;
+}
+
+.ft-row--matched {
+  box-shadow: inset 0 0 0 1px var(--ft-match-ring, rgba(234, 179, 8, 0.55));
+}
+
+.ft-row--hidden .ft-label,
+.ft-row--hidden .ft-icon {
+  opacity: var(--ft-hidden-opacity, 0.45);
+}
+
+.ft-row--disabled {
+  opacity: var(--ft-disabled-opacity, 0.4);
+  pointer-events: none;
+}
+
+.ft-row--locked .ft-label {
+  font-style: italic;
+}
+
+/* Indentation is driven by --ft-depth, set inline per row. */
+.ft-indent {
+  flex: 0 0 auto;
+  width: calc(var(--ft-depth, 0) * var(--ft-indent, 14px));
+}
+
+.ft-grip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  width: 10px;
+  height: var(--ft-icon-size, 14px);
+  margin-right: -2px;
+  color: var(--ft-text-muted, #64748b);
+  opacity: 0;
+  cursor: grab;
+  transition: opacity var(--ft-transition, 120ms ease);
+}
+
+.ft-row:hover .ft-grip,
+.ft-row--selected .ft-grip {
+  opacity: 1;
+}
+
+.ft-grip:active {
+  cursor: grabbing;
+}
+
+.ft-grip svg {
+  width: 100%;
+  height: 100%;
+}
+
+.ft-twisty {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  color: var(--ft-accent, #06b6d4);
+  cursor: pointer;
+}
+
+.ft-twisty:hover {
+  background: var(--ft-accent-soft, rgba(6, 182, 212, 0.22));
+}
+
+.ft-twisty--empty {
+  visibility: hidden;
+  cursor: default;
+}
+
+.ft-twisty svg {
+  width: 12px;
+  height: 12px;
+}
+
+.ft-icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ft-icon-size, 14px);
+  height: var(--ft-icon-size, 14px);
+}
+
+.ft-icon svg,
+.ft-icon img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.ft-label-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.ft-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ft-hint {
+  flex: 0 0 auto;
+  color: var(--ft-hint, #64748b);
+  font-size: var(--ft-hint-font-size, 11px);
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.ft-rename {
+  width: 100%;
+  height: calc(var(--ft-row-height, 28px) - 8px);
+  padding: 0 4px;
+  border-radius: 3px;
+  border: 1px solid var(--ft-accent, #06b6d4);
+  background: var(--ft-search-bg, #020617);
+  color: #ffffff;
+  font: inherit;
+  font-size: var(--ft-font-size, 12px);
+  outline: none;
+}
+
+/* ============================== ACTIONS ============================ */
+
+.ft-actions {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity var(--ft-transition, 120ms ease);
+}
+
+.ft-row:hover .ft-actions,
+.ft-row--selected .ft-actions,
+.ft-row:focus-within .ft-actions {
+  opacity: 1;
+}
+
+/* A toggled-off eye or an engaged lock stays visible — it is state, not chrome. */
+.ft-row .ft-actions:has(.ft-act--off),
+.ft-row .ft-actions:has(.ft-act--warn) {
+  opacity: 1;
+}
+
+.ft-act {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  color: var(--ft-text-muted, #64748b);
+  cursor: pointer;
+  transition: color var(--ft-transition, 120ms ease);
+}
+
+.ft-act svg {
+  width: var(--ft-icon-size, 14px);
+  height: var(--ft-icon-size, 14px);
+}
+
+.ft-act:hover {
+  color: var(--ft-text, #cbd5e1);
+  background: var(--ft-accent-soft, rgba(6, 182, 212, 0.22));
+}
+
+.ft-act--off {
+  color: var(--ft-text-muted, #64748b);
+}
+
+.ft-act--warn {
+  color: var(--ft-warn, #f59e0b);
+}
+
+.ft-act--danger:hover {
+  color: var(--ft-danger, #f43f5e);
+  background: rgba(244, 63, 94, 0.15);
+}
+
+/* ============================== DROP FEEDBACK ====================== */
+
+/* Lift the whole row so its indicator line paints over its neighbours. */
+.ft-row--drop-before,
+.ft-row--drop-after {
+  z-index: 1;
+}
+
+.ft-row--drop-before::before,
+.ft-row--drop-after::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--ft-depth, 0) * var(--ft-indent, 14px));
+  right: 0;
+  height: var(--ft-drop-line-width, 2px);
+  background: var(--ft-drop-line, #22d3ee);
+  border-radius: 1px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.ft-row--drop-before::before {
+  top: -1px;
+}
+
+.ft-row--drop-after::before {
+  bottom: -1px;
+}
+
+.ft-row--drop-inside {
+  background: var(--ft-drop-inside-bg, rgba(6, 182, 212, 0.16));
+  border-color: var(--ft-drop-inside-border, rgba(34, 211, 238, 0.7));
+}
+
+.ft-row--drop-rejected {
+  cursor: not-allowed;
+  box-shadow: inset 0 0 0 1px var(--ft-drop-reject, #f43f5e);
+}
+
+.ft-endzone {
+  height: 18px;
+  margin-top: 2px;
+  border-radius: var(--ft-radius, 6px);
+  border: 1px dashed transparent;
+}
+
+.ft-endzone--active {
+  border-color: var(--ft-drop-inside-border, rgba(34, 211, 238, 0.7));
+  background: var(--ft-drop-inside-bg, rgba(6, 182, 212, 0.16));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ft-root * {
+    transition: none !important;
+  }
+}
