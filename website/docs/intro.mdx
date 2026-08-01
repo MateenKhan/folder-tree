@@ -1,0 +1,146 @@
+---
+id: intro
+title: Getting started
+sidebar_position: 1
+slug: /intro
+---
+
+import Demo from '@site/src/components/Demo';
+import { FullDemo, ReadOnlyDemo, SearchDemo } from '@site/src/components/Demo/examples';
+
+A **dark-first React tree view** with drag-and-drop reordering, search that auto-expands, multi/range select and full keyboard navigation.
+
+Hand it a nested array and it renders. Every interaction is a callback you opt into — and **a capability you don't wire up doesn't render its control.**
+
+<Demo
+  code={`import { FolderTree, moveNodes } from '@jugaaadi/folder-tree';
+import '@jugaaadi/folder-tree/styles.css';
+
+<FolderTree
+  nodes={nodes}
+  selectedIds={selectedIds}
+  onSelect={setSelectedIds}
+  search={search}
+  onSearchChange={setSearch}
+  onMove={(moved, target, position) =>
+    setNodes((cur) => moveNodes(cur, moved, target, position))
+  }
+  onRename={(id, name) => rename(id, name)}
+  onToggleHidden={(id) => toggleHidden(id)}
+  onToggleLocked={(id) => toggleLocked(id)}
+  onDelete={(ids) => confirmDelete(ids)}
+/>`}
+  hint={
+    <>
+      Drag a row onto another. <code>Ctrl</code>-click to multi-select,{' '}
+      <code>Shift</code>-click for a range. Arrow keys navigate, <code>F2</code> renames,{' '}
+      <code>Enter</code> and <code>Space</code> act. Type in the search box and watch it expand.
+    </>
+  }
+>
+  <FullDemo />
+</Demo>
+
+## Install
+
+```bash
+npm install @jugaaadi/folder-tree
+```
+
+`react` and `react-dom` (>= 17) are peer dependencies. Zero runtime dependencies otherwise.
+
+```tsx
+import { FolderTree } from '@jugaaadi/folder-tree';
+import '@jugaaadi/folder-tree/styles.css';
+```
+
+## No handler, no control
+
+This is the design rule, not an oversight. The same tree with only `onSelect` wired renders **no drag handles, no rename, no delete, no eye icon** — because none of them would do anything.
+
+<Demo
+  code={`{/* only selection — every other control is absent */}
+<FolderTree
+  nodes={nodes}
+  selectedIds={selectedIds}
+  onSelect={setSelectedIds}
+  showSearch={false}
+/>`}
+  hint={<>Compare with the tree above. Nothing is greyed out — it simply isn't there.</>}
+>
+  <ReadOnlyDemo />
+</Demo>
+
+A dead eye icon is worse than no eye icon: it invites a click, does nothing, and teaches users the UI is unreliable.
+
+## Search that auto-expands
+
+Typing reveals matches wherever they are, expanding ancestors as needed. Nodes can carry `keywords` — extra searchable text that is never rendered.
+
+<Demo
+  code={`const nodes = [
+  { id: 'kitchen', label: 'Kitchen', keywords: 'room interior' },
+  { id: 'bedroom', label: 'Bedroom', keywords: 'room interior' },
+];
+
+<FolderTree nodes={nodes} search={search} onSearchChange={setSearch} ... />`}
+  hint={<>Clear the box and the tree collapses back to where it was.</>}
+>
+  <SearchDemo />
+</Demo>
+
+## Node shape
+
+```ts
+type TreeNode<T = unknown> = {
+  id: string;            // stable, tree-unique
+  label: string;
+  children?: TreeNode<T>[];
+  icon?: React.ReactNode; // inline SVG, <img>, a colour chip — your choice
+  hint?: string;          // right-aligned muted text: a size, a count
+  keywords?: string;      // searchable, never rendered
+  hidden?: boolean;
+  locked?: boolean;
+  disabled?: boolean;
+  readOnly?: boolean;     // yours, but not reorderable or deletable
+  data?: T;               // your payload, typed, handed back untouched
+};
+```
+
+`T` is yours. The package never inspects it.
+
+## Props
+
+| Prop | Type | |
+| --- | --- | --- |
+| `nodes` | `TreeNode<T>[]` | **Required.** |
+| `selectedIds` / `onSelect` | — | **Required.** Controlled selection. |
+| `search` / `onSearchChange` | `string` | Controlled search. |
+| `showSearch` | `boolean` | Render the built-in field. Default `true`. |
+| `searchPlaceholder` | `string` | |
+| `expandedIds` / `onExpandedChange` | — | Controlled expansion. |
+| `defaultExpandedIds` | `string[]` | For the uncontrolled case. |
+| `onRename` | `(id, name)` | Omit to disable renaming. |
+| `onToggleHidden` / `onToggleLocked` | `(id)` | Omit to hide the control. |
+| `onDelete` | `(ids)` | Omit to disable deleting. |
+| `onMove` | `(moved, target, position)` | **Omit to disable drag entirely.** |
+| `onHoverNode` / `onContextMenu` | — | |
+| `emptyMessage` | `ReactNode` | |
+| `virtualiseAfter` | `number` | Rows before virtualising. Default `200`. |
+| `ariaLabel` / `className` / `style` | — | |
+
+## Keyboard
+
+`role="tree"` with the interactions that implies: arrow keys move and expand/collapse, `Home`/`End` jump, `Enter`/`Space` activate, `F2` renames, `Shift` extends a range, `Ctrl`/`Cmd` toggles individual rows.
+
+## It never mutates your tree
+
+`nodes` is yours. The component reads it and calls back; it never writes. `moveNodes` is a **helper you may ignore** — it takes exactly what `onMove` gave you and returns a new tree with the descendant guard applied.
+
+```tsx
+onMove={(moved, target, position) =>
+  setNodes((cur) => moveNodes(cur, moved, target, position))
+}
+```
+
+Roll your own if your tree lives in a database, a store, or on a server.

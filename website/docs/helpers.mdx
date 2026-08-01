@@ -1,0 +1,91 @@
+---
+id: helpers
+title: Helpers
+sidebar_position: 3
+---
+
+Pure tree functions, exported so you can use them without mounting anything. No React, no DOM, no mutation — every one returns new structure.
+
+```ts
+import { moveNodes, canDrop, findNode, searchTree } from '@jugaaadi/folder-tree';
+```
+
+## `moveNodes`
+
+The one most consumers want. Hand it exactly what `onMove` gave you:
+
+```ts
+moveNodes(nodes, moved, target, position) → TreeNode[]
+```
+
+```tsx
+onMove={(moved, target, position) =>
+  setNodes((cur) => moveNodes(cur, moved, target, position))
+}
+```
+
+Two things it does that a naive implementation misses:
+
+**The descendant guard.** Dropping a folder inside one of its own children would detach that subtree from the tree entirely. `moveNodes` rejects it and returns the original array unchanged.
+
+**Structural sharing.** Branches that didn't change keep their identity, so `React.memo` and `useMemo` downstream stay valid instead of re-rendering the whole tree.
+
+## `canDrop`
+
+```ts
+canDrop(nodes, moved, target, position) → boolean
+```
+
+The guard on its own, for when you write your own move — a server call, a store action, a database update. Same answer `moveNodes` uses internally.
+
+## Finding
+
+```ts
+findNode(nodes, id)          → TreeNode | undefined
+findNodePath(nodes, id)      → TreeNode[]      // root → node
+ancestorIds(nodes, id)       → TreeNodeId[]
+collectDescendantIds(node)   → TreeNodeId[]
+isDescendantOf(nodes, a, b)  → boolean
+```
+
+`findNodePath` is what you want for a breadcrumb. `ancestorIds` is what you want to expand a path to a node:
+
+```ts
+setExpandedIds((cur) => [...new Set([...cur, ...ancestorIds(nodes, id)])]);
+```
+
+## Searching
+
+```ts
+searchTree(nodes, query)   → SearchResult
+nodeMatches(node, query)   → boolean
+```
+
+`searchTree` returns the matching ids **and** the ancestors that must be expanded to reveal them — which is exactly what the built-in search field uses. Drive your own search box with it and get identical behaviour.
+
+`keywords` on a node is searched but never rendered, so `Kitchen` can match `"room"` without the word appearing in the UI.
+
+## Walking and flattening
+
+```ts
+walkTree(nodes, visitor)
+flattenVisible(nodes, expandedIds) → FlatRow[]
+```
+
+`flattenVisible` produces the render rows — each with `depth`, `parentId`, `hasChildren` and `expanded` resolved. It's what the virtualiser consumes past `virtualiseAfter` rows, and it's useful for exporting a flat view or driving your own renderer.
+
+```ts
+type FlatRow<T> = {
+  node: TreeNode<T>;
+  depth: number;
+  parentId: TreeNodeId | null;
+  hasChildren: boolean;
+  expanded: boolean;
+};
+```
+
+## Why they're exported
+
+The same reason the component doesn't own your tree: **your state might not be a local array.** It might be in Redux, on a server, or in IndexedDB. The helpers let you reuse the tricky parts — the descendant guard, the search-expansion set, the flattening — without adopting a state model you didn't choose.
+
+They're also where the 25 tests live. The guard, multi-move payloads, structural sharing, search sets and flattening are all pinned by assertions, so a change in behaviour shows up as a failing test rather than a subtly broken tree.

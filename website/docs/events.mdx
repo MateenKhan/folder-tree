@@ -1,0 +1,97 @@
+---
+id: events
+title: Events
+sidebar_position: 2
+---
+
+Every callback hands you **intent, not action**. The component never mutates your tree, never deletes anything, never reorders. It tells you what the user asked for and gets out of the way.
+
+That also means **omitting a handler removes its control** — see [no handler, no control](./intro.mdx#no-handler-no-control).
+
+## Selection
+
+```ts
+onSelect: (ids: TreeNodeId[], meta: SelectMeta) => void
+```
+
+Always fires with the **complete** new selection, not a delta. `meta` tells you how it was made:
+
+```ts
+type SelectMeta = {
+  multi: boolean;   // Ctrl/Cmd held — add to or remove from the selection
+  range: boolean;   // Shift held — extend from the anchor row
+  via: 'pointer' | 'keyboard';
+};
+```
+
+`via` is useful for scroll-into-view: you generally want to scroll on keyboard selection and not on a click, since the click already happened somewhere visible.
+
+## Move
+
+```ts
+onMove: (moved: TreeNodeId[], target: TreeNodeId, position: DropPosition) => void
+```
+
+`position` is `'before' | 'inside' | 'after'`. **Omitting `onMove` disables drag entirely** — no handles, no drop indicators.
+
+`moved` is an array because dragging a multi-selection moves all of it.
+
+The usual implementation is one line:
+
+```tsx
+onMove={(moved, target, position) =>
+  setNodes((cur) => moveNodes(cur, moved, target, position))
+}
+```
+
+`moveNodes` applies the descendant guard for you — dropping a folder inside its own child is rejected rather than corrupting the tree. If you write your own, use `canDrop` to get the same protection.
+
+## Rename
+
+```ts
+onRename: (id: TreeNodeId, name: string) => void
+```
+
+Fires when the inline editor commits — `Enter` or blur. `Escape` cancels and fires nothing. Omit to remove renaming.
+
+## Hidden and locked
+
+```ts
+onToggleHidden: (id: TreeNodeId) => void
+onToggleLocked: (id: TreeNodeId) => void
+```
+
+These fire with the id only — **you own the flag**. The component reads `node.hidden` / `node.locked` to render state; it doesn't track its own.
+
+Omit either and the corresponding icon isn't rendered at all.
+
+## Delete
+
+```ts
+onDelete: (ids: TreeNodeId[]) => void
+```
+
+:::warning It fires with intent, not permission
+Nothing has been removed when this fires. **Whether anything is destroyed is your code's decision** — confirm it, undo-stack it, or ignore it. Rows marked `readOnly` are excluded from `ids` before you see them.
+:::
+
+## Hover and context menu
+
+```ts
+onHoverNode: (id: TreeNodeId | null) => void
+onContextMenu: (id: TreeNodeId, e: React.MouseEvent) => void
+```
+
+`onHoverNode` fires `null` on leave — handy for syncing a highlight with a canvas or 3D view.
+
+`onContextMenu` hands you the raw event and does nothing else. There is no built-in menu; call `e.preventDefault()` and render your own.
+
+## Expansion
+
+```ts
+expandedIds?: TreeNodeId[]
+onExpandedChange?: (ids: TreeNodeId[]) => void
+defaultExpandedIds?: TreeNodeId[]
+```
+
+Controlled if you pass `expandedIds`, uncontrolled otherwise. Search auto-expands to reveal matches without permanently changing your expansion state — clear the search and it collapses back.
