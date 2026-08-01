@@ -223,4 +223,51 @@ test('a search filter removes rows and recomputes hasChildren', () => {
   );
 });
 
+/**
+ * Regression: collapsing one folder must not be undone by toggling a sibling.
+ *
+ * The component memoises rows on their visible props and ignores callback
+ * identity, so a row that doesn't re-render keeps the handler it was given —
+ * closing over the expansion set of that render. Collapsing Assets left the
+ * Scenes row holding a callback that still believed Assets was open, and
+ * toggling Scenes recomputed from that stale snapshot and re-expanded Assets.
+ *
+ * FolderTree now reads expansion through a ref so the handler is stable *and*
+ * current. These assertions pin the semantics that fix has to preserve.
+ */
+test('toggling one id never disturbs its siblings', () => {
+  const toggle = (set, id) => {
+    const next = new Set(set);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    return next;
+  };
+
+  let expanded = new Set(['assets', 'scenes']);
+
+  expanded = toggle(expanded, 'assets');
+  assert.deepEqual([...expanded], ['scenes'], 'assets collapsed');
+
+  expanded = toggle(expanded, 'scenes');
+  assert.deepEqual([...expanded], [], 'scenes collapsed, assets still collapsed');
+
+  expanded = toggle(expanded, 'scenes');
+  assert.deepEqual([...expanded], ['scenes'], 'scenes reopened, assets stays collapsed');
+});
+
+test('flattenVisible keeps siblings visible when one collapses', () => {
+  const t = tree();
+  const rootIds = t.map((n) => n.id);
+
+  const allOpen = flattenVisible(t, new Set(rootIds), null).length;
+  const firstClosed = flattenVisible(t, new Set(rootIds.slice(1)), null);
+
+  assert.ok(firstClosed.length < allOpen, 'collapsing a root removes its descendants');
+  assert.deepEqual(
+    firstClosed.filter((r) => r.depth === 0).map((r) => r.node.id),
+    rootIds,
+    'every root sibling is still rendered',
+  );
+});
+
 console.log(`\n${passed} passed\n`);
