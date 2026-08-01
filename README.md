@@ -1,5 +1,13 @@
 # @jugaaadi/folder-tree
 
+### 👉 [Live demo & docs — folder-tree.jugaaadi.com](https://folder-tree.jugaaadi.com)
+
+<!-- Absolute URL on purpose: npm renders the README outside the repo, so a
+     relative path would show a broken image on the package page. Served from
+     GitHub, so it never enters the published tarball. -->
+
+![folder-tree in action](https://raw.githubusercontent.com/MateenKhan/folder-tree/main/.github/assets/demo.gif)
+
 A **dark-first React tree view** with drag-and-drop reordering, search that auto-expands, multi/range select and full keyboard navigation.
 
 Hand it a nested array and it renders. Every interaction is a callback you opt into — and **a capability you don't wire up doesn't render its control**. No dead eye icons, no inert drag handles, no "coming soon" affordances your users can click.
